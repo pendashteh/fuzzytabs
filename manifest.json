@@ -1,17 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "Quick Tab Finder",
-  "version": "1.0",
-  "description": "Fuzzy search to quickly find and switch tabs",
-  "permissions": ["tabs", "storage"],
+  "name": "Fuzzy Tabs",
+  "version": "1.0.0",
+  "description": "Fuzzy search to quickly find and switch between tabs",
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_title": "Quick Tab Finder"
   },
   "commands": {
     "_execute_action": {
       "suggested_key": {
-        "default": "Ctrl+Shift+K"
-      }
+        "default": "Ctrl+Shift+K",
+        "mac": "Command+Shift+K"
+      },
+      "description": "Open tab finder"
     }
   }
 }
