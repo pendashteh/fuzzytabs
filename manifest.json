@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Fuzzy Search 3",
+  "name": "Fuzzy Search v1.0",
   "version": "1.0.0",
   "description": "Fuzzy search to quickly find and switch between tabs",
   "permissions": [
@@ -8,7 +8,7 @@
     "storage"
   ],
   "action": {
-    "default_title": "Quick Tab Finder"
+    "default_title": "Fuzzy Search v1.0"
   },
   "background": {
     "service_worker": "background.js"
