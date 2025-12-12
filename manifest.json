@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Fuzzy Tabs",
+  "name": "Fuzzy Search 3",
   "version": "1.0.0",
   "description": "Fuzzy search to quickly find and switch between tabs",
   "permissions": [
@@ -8,11 +8,13 @@
     "storage"
   ],
   "action": {
-    "default_popup": "popup.html",
     "default_title": "Quick Tab Finder"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "commands": {
-    "_execute_action": {
+    "open-tab-finder": {
       "suggested_key": {
         "default": "Ctrl+Shift+K",
         "mac": "Command+Shift+K"
