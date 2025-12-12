@@ -2,6 +2,7 @@ let allTabs = [];
 let filteredTabs = [];
 let selectedIndex = 0;
 const tabOpenTimes = {};
+const fallbackIcon = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ctext y=%2212%22 font-size=%2212%22%3E🌐%3C/text%3E%3C/svg%3E';
 
 // Fuzzy search implementation
 function fuzzyMatch(str, pattern) {
@@ -130,12 +131,15 @@ function filterTabs() {
   renderTabs();
 }
 
-// Render tabs
+// Render tabs using DOM manipulation instead of innerHTML
 function renderTabs() {
   const tabList = document.getElementById('tabList');
   const tabCount = document.getElementById('tabCount');
   
   tabCount.textContent = `${filteredTabs.length} tab${filteredTabs.length !== 1 ? 's' : ''} found`;
+
+  // Clear existing content
+  tabList.innerHTML = '';
 
   if (filteredTabs.length === 0) {
     tabList.innerHTML = `
@@ -149,40 +153,104 @@ function renderTabs() {
     return;
   }
 
-  tabList.innerHTML = filteredTabs.map((tab, index) => {
-    const faviconUrl = tab.favIconUrl || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><text y="12" font-size="12">🌐</text></svg>';
-    const fallbackIcon = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><text y="12" font-size="12">🌐</text></svg>';
+  // Create tab items using DOM
+  filteredTabs.forEach((tab, index) => {
+    const tabItem = document.createElement('div');
+    tabItem.className = `tab-item ${index === selectedIndex ? 'selected' : ''}`;
+    tabItem.dataset.index = index;
+
+    const tabContent = document.createElement('div');
+    tabContent.className = 'tab-content';
+
+    // Favicon
+    const favicon = document.createElement('img');
+    favicon.className = 'favicon';
+    favicon.alt = '';
     
-    return `
-      <div class="tab-item ${index === selectedIndex ? 'selected' : ''}" data-index="${index}">
-        <div class="tab-content">
-          <img 
-            class="favicon" 
-            src="${faviconUrl}"
-            onerror="this.src='${fallbackIcon}'"
-          />
-          <div class="tab-info">
-            <div class="tab-title">${escapeHtml(tab.title || 'Untitled')}</div>
-            <div class="tab-url">${escapeHtml(tab.url || '')}</div>
-            <div class="tab-preview">${escapeHtml(tab.content.substring(0, 150))}</div>
-            <div class="tab-meta">
-              <div class="meta-item">
-                <svg class="clock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span>${formatTimeAgo(tab.openedAt)}</span>
-              </div>
-              <div class="meta-item">
-                <span>Window ${tab.windowId}</span>
-              </div>
-              ${tab.audible ? '<div class="meta-item"><span>🔊 Playing</span></div>' : ''}
-              ${tab.pinned ? '<div class="meta-item"><span>📌 Pinned</span></div>' : ''}
-            </div>
-          </div>
-        </div>
-      </div>
+    // Handle favicon URL safely
+    if (tab.favIconUrl && !tab.favIconUrl.includes('onerror=') && !tab.favIconUrl.includes('<')) {
+      favicon.src = tab.favIconUrl;
+      favicon.onerror = function() {
+        this.src = fallbackIcon;
+      };
+    } else {
+      favicon.src = fallbackIcon;
+    }
+
+    // Tab info container
+    const tabInfo = document.createElement('div');
+    tabInfo.className = 'tab-info';
+
+    // Title
+    const title = document.createElement('div');
+    title.className = 'tab-title';
+    title.textContent = tab.title || 'Untitled';
+
+    // URL
+    const url = document.createElement('div');
+    url.className = 'tab-url';
+    url.textContent = tab.url || '';
+
+    // Preview
+    const preview = document.createElement('div');
+    preview.className = 'tab-preview';
+    preview.textContent = tab.content.substring(0, 150);
+
+    // Metadata
+    const meta = document.createElement('div');
+    meta.className = 'tab-meta';
+
+    // Time
+    const timeItem = document.createElement('div');
+    timeItem.className = 'meta-item';
+    timeItem.innerHTML = `
+      <svg class="clock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>${formatTimeAgo(tab.openedAt)}</span>
     `;
-  }).join('');
+
+    // Window
+    const windowItem = document.createElement('div');
+    windowItem.className = 'meta-item';
+    const windowSpan = document.createElement('span');
+    windowSpan.textContent = `Window ${tab.windowId}`;
+    windowItem.appendChild(windowSpan);
+
+    meta.appendChild(timeItem);
+    meta.appendChild(windowItem);
+
+    // Audio indicator
+    if (tab.audible) {
+      const audioItem = document.createElement('div');
+      audioItem.className = 'meta-item';
+      const audioSpan = document.createElement('span');
+      audioSpan.textContent = '🔊 Playing';
+      audioItem.appendChild(audioSpan);
+      meta.appendChild(audioItem);
+    }
+
+    // Pinned indicator
+    if (tab.pinned) {
+      const pinnedItem = document.createElement('div');
+      pinnedItem.className = 'meta-item';
+      const pinnedSpan = document.createElement('span');
+      pinnedSpan.textContent = '📌 Pinned';
+      pinnedItem.appendChild(pinnedSpan);
+      meta.appendChild(pinnedItem);
+    }
+
+    // Assemble everything
+    tabInfo.appendChild(title);
+    tabInfo.appendChild(url);
+    tabInfo.appendChild(preview);
+    tabInfo.appendChild(meta);
+
+    tabContent.appendChild(favicon);
+    tabContent.appendChild(tabInfo);
+    tabItem.appendChild(tabContent);
+    tabList.appendChild(tabItem);
+  });
 
   // Scroll selected item into view
   const selectedItem = tabList.querySelector('.tab-item.selected');
@@ -204,20 +272,18 @@ function switchToTab(tab) {
   }
 }
 
-// Escape HTML
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+// Reset search when returning to the tab
+function resetSearch() {
+  document.getElementById('searchInput').value = '';
+  filterTabs();
+  document.getElementById('searchInput').focus();
 }
 
 // Event listeners
 document.getElementById('searchInput').addEventListener('input', filterTabs);
 
 document.getElementById('clearBtn').addEventListener('click', () => {
-  document.getElementById('searchInput').value = '';
-  filterTabs();
-  document.getElementById('searchInput').focus();
+  resetSearch();
 });
 
 document.getElementById('searchInput').addEventListener('keydown', (e) => {
@@ -233,8 +299,7 @@ document.getElementById('searchInput').addEventListener('keydown', (e) => {
     e.preventDefault();
     switchToTab(filteredTabs[selectedIndex]);
   } else if (e.key === 'Escape') {
-    document.getElementById('searchInput').value = '';
-    filterTabs();
+    resetSearch();
   }
 });
 
@@ -243,6 +308,15 @@ document.getElementById('tabList').addEventListener('click', (e) => {
   if (tabItem) {
     const index = parseInt(tabItem.dataset.index);
     switchToTab(filteredTabs[index]);
+  }
+});
+
+// Listen for when page becomes visible again
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    // Page is now visible - reload tabs and reset search
+    loadTabs();
+    resetSearch();
   }
 });
 

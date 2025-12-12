@@ -34,6 +34,27 @@
 
 5. Done! Press `Ctrl+Shift+F` (or `Cmd+Shift+F` on Mac) to start searching
 
+### Updating
+
+To get the latest version:
+
+1. Pull the latest changes:
+   ```bash
+   cd fuzzytabs
+   git pull origin main
+   ```
+
+2. Go to `brave://extensions/` or `chrome://extensions/`
+
+3. Find **Fuzzy Tabs** and click the **reload icon** (🔄)
+
+4. All done! Your extension is now updated
+
+**Alternative Method (if you downloaded ZIP):**
+1. Download the latest ZIP from GitHub
+2. Extract to the same folder (overwrite existing files)
+3. Reload the extension in your browser
+
 ## 🎮 Usage
 
 ### Opening Fuzzy Tabs
